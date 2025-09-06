@@ -1,0 +1,287 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  width: 100%;
+  max-width: 95vw;
+  margin: 0 auto;
+  text-align: center;
+  min-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,0.3);
+  backdrop-filter: blur(10px);
+}
+
+h2 {
+  color: #333;
+  margin-bottom: 30px;
+  font-size: 32px;
+}
+
+input[type="text"], 
+input[type="email"], 
+input[type="password"], 
+input[type="tel"],
+input[type="number"],
+textarea {
+  width: 100%;
+  padding: 18px;
+  margin: 15px 0;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  font-size: 18px;
+  transition: border-color 0.3s;
+}
+
+input[type="file"] {
+  width: 100%;
+  padding: 15px;
+  margin: 15px 0;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.btn {
+  width: 100%;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.3s;
+  margin: 20px 0;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  margin-top: 15px;
+}
+
+.error {
+  color: #e74c3c;
+  margin: 20px 0;
+  padding: 15px;
+  background: #ffeaea;
+  border-radius: 8px;
+  border: 1px solid #e74c3c;
+  font-size: 16px;
+}
+
+.success {
+  color: #27ae60;
+  margin: 20px 0;
+  padding: 15px;
+  background: #eafaf1;
+  border-radius: 8px;
+  border: 1px solid #27ae60;
+  font-size: 16px;
+}
+
+p {
+  margin: 25px 0;
+  color: #666;
+  font-size: 16px;
+}
+
+a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ড্যাশবোর্ড স্টাইল */
+.dashboard {
+  max-width: 95vw;
+  width: 100%;
+  padding: 40px;
+  text-align: left;
+}
+
+.balance {
+  font-size: 32px;
+  color: #ffffff;
+  font-weight: bold;
+  margin: 30px 0;
+  text-align: center;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  padding: 25px;
+  border-radius: 15px;
+  border: 3px solid #ffffff;
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.buttons {
+  display: flex;
+  gap: 30px;
+  margin: 40px 0;
+  justify-content: center;
+}
+
+.buttons .btn {
+  flex: 1;
+  max-width: 300px;
+  font-size: 22px;
+  padding: 25px;
+}
+
+.announcement {
+  background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 50%, #c3e6cb 100%);
+  padding: 40px;
+  border-radius: 20px;
+  border: 4px solid #28a745;
+  margin: 40px 0;
+  text-align: left;
+  font-size: 20px;
+  line-height: 1.8;
+  box-shadow: 0 15px 35px rgba(40, 167, 69, 0.3);
+}
+
+.announcement h3 {
+  color: #1976D2;
+  margin-bottom: 25px;
+  font-size: 32px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.announcement p {
+  font-size: 18px;
+  margin: 15px 0;
+  color: #2c5aa0;
+  font-weight: 500;
+}
+
+.announcement strong {
+  font-size: 20px;
+  color: #1976D2;
+}
+
+/* এডমিন প্যানেল স্টাইল */
+.admin-panel {
+  max-width: 95vw;
+  width: 100%;
+  padding: 40px;
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 20px;
+  margin: 0 auto;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  backdrop-filter: blur(10px);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 30px 0;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  font-size: 16px;
+}
+
+th, td {
+  padding: 18px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+tr:hover {
+  background: #f8f9fa;
+}
+
+.status-pending {
+  color: #f39c12;
+  font-weight: bold;
+}
+
+.status-approved {
+  color: #27ae60;
+  font-weight: bold;
+}
+
+.status-rejected {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+/* রেসপন্সিভ ডিজাইন */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+  
+  .container {
+    padding: 25px;
+    min-height: calc(100vh - 20px);
+  }
+  
+  .dashboard {
+    padding: 25px;
+  }
+  
+  .buttons {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .admin-panel {
+    padding: 25px;
+    overflow-x: auto;
+  }
+  
+  table {
+    min-width: 800px;
+  }
+  
+  h2 {
+    font-size: 26px;
+  }
+  
+  .balance {
+    font-size: 24px;
+  }
+}
