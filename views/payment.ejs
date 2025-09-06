@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>পেমেন্ট</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="container">
+    <h2>পেমেন্ট জমা দিন</h2>
+    <p style="background:#e8f5e8;padding:15px;border-radius:5px;margin:20px 0;">
+        <strong>নির্দেশনা:</strong> শুধুমাত্র <b style="color:#e74c3c;">01846735445</b> নাম্বারে bKash/Nagad এ টাকা পাঠান
+    </p>
+
+    <form method="POST" action="/payment">
+        <input type="tel" name="senderNumber" placeholder="যে নাম্বার থেকে টাকা পাঠিয়েছেন" required><br>
+        <input type="number" name="amount" placeholder="কত টাকা পাঠিয়েছেন" required min="1"><br>
+        <button type="submit" class="btn">পেমেন্ট সাবমিট করুন</button>
+    </form>
+    
+    <a href="/dashboard" class="btn btn-secondary">ড্যাশবোর্ডে ফিরে যান</a>
+</div>
+</body>
+</html>_

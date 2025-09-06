@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>রেজিস্ট্রেশন</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="container">
+    <h2>নতুন একাউন্ট তৈরি করুন</h2>
+    <% if(message){ %>
+      <p class="error"><%= message %></p>
+    <% } %>
+    <form method="POST" action="/register">
+        <input type="text" name="name" placeholder="পূর্ণ নাম" required><br>
+        <input type="tel" name="phone" placeholder="মোবাইল নাম্বার" required><br>
+        <input type="email" name="email" placeholder="ইমেইল" required><br>
+        <input type="password" name="password" placeholder="পাসওয়ার্ড" required><br>
+        <button type="submit" class="btn">রেজিস্ট্রেশন করুন</button>
+    </form>
+    <p>আগে থেকেই একাউন্ট আছে? <a href="/login">লগইন করুন</a></p>
+</div>
+</body>
+    </html>

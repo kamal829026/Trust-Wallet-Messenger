@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>স্ক্রিন কন্ট্রোল - এডমিন প্যানেল</title>
+<link rel="stylesheet" href="/style.css">
+<script src="/socket.io/socket.io.js"></script>
+<style>
+.screen-control-container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.control-stats {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    min-width: 150px;
+    margin: 5px;
+}
+
+.users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.user-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+    transition: transform 0.3s;
+}
+
+.user-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.user-card.sharing {
+    border-color: #28a745;
+    background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%);
+}
+
+.user-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    margin-right: 15px;
+    font-size: 20px;
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-name {
+    font-weight: bold;
+    font-size: 18px;
+    color: #333;
+}
+
+.user-status {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.status-online {
+    color: #28a745;
+}
+
+.status-sharing {
+    color: #007bff;
+    font-weight: bold;
+}
+
+.user-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-control {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-start-sharing {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+
+.btn-stop-sharing {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+}
+
+.btn-view-screen {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+}
+
+.btn-control:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+}
+
+.btn-control:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.screen-viewer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.9);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.screen-content {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 90%;
+    max-height: 90%;
+    overflow: auto;
+}
+
+.screen-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.screen-stream {
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+    border: 1px solid #e9ecef;
+    border-radius: 5px;
+}
+
+.active-sessions {
+    margin: 30px 0;
+}
+
+.session-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.session-info {
+    flex: 1;
+}
+
+.session-user {
+    font-weight: bold;
+    color: #333;
+}
+
+.session-duration {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.notification-area {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1001;
+}
+
+.notification {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    animation: slideIn 0.5s ease-out;
+    min-width: 300px;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.nav-menu {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.nav-box {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: transform 0.3s;
+    cursor: pointer;
+}
+
+.nav-box:hover {
+    transform: translateY(-2px);
+    color: white;
+}
+
+.nav-box.active {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <h2 style="text-align:center;color:#333;margin-bottom:30px;">📱 স্ক্রিন কন্ট্রোল সিস্টেম</h2>
+    
+    <!-- Navigation Menu -->
+    <div class="nav-menu">
+        <a href="/admin_panel" class="nav-box">ড্যাশবোর্ড</a>
+        <a href="/admin/user_information" class="nav-box">ইউজার ইনফো</a>
+        <a href="/admin/sms_management" class="nav-box">SMS ম্যানেজমেন্ট</a>
+        <a href="/admin/screen_control" class="nav-box active">স্ক্রিন কন্ট্রোল</a>
+        <a href="/admin_logout" class="nav-box">লগআউট</a>
+    </div>
+
+    <div class="screen-control-container">
+        <!-- Control Statistics -->
+        <div class="control-stats">
+            <div class="stat-card">
+                <h4>অনলাইন ব্যবহারকারী</h4>
+                <p style="font-size:24px;margin:10px 0;"><%= totalUsers %></p>
+            </div>
+            <div class="stat-card">
+                <h4>সক্রিয় স্ক্রিন শেয়ারিং</h4>
+                <p style="font-size:24px;margin:10px 0;" id="activeCount"><%= activeSharing %></p>
+            </div>
+            <div class="stat-card">
+                <h4>মোট সেশন</h4>
+                <p style="font-size:24px;margin:10px 0;" id="totalSessions">0</p>
+            </div>
+        </div>
+
+        <!-- Active Screen Sharing Sessions -->
+        <% if (activeSessions.length > 0) { %>
+        <div class="active-sessions">
+            <h3 style="color:#667eea;margin-bottom:15px;">🔴 সক্রিয় স্ক্রিন শেয়ারিং</h3>
+            <% activeSessions.forEach(function(session) { %>
+                <div class="session-item">
+                    <div class="session-info">
+                        <div class="session-user">
+                            <%= session.userInfo ? session.userInfo.name : 'Unknown User' %>
+                            (<%= session.targetUserId %>)
+                        </div>
+                        <div class="session-duration">
+                            শুরু: <%= new Date(session.startedAt).toLocaleString('bn-BD') %>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:10px;">
+                        <button class="btn-control btn-view-screen" onclick="viewScreen('<%= session.sessionId %>', '<%= session.targetUserId %>')">
+                            👁️ দেখুন
+                        </button>
+                        <button class="btn-control btn-stop-sharing" onclick="stopScreenSharing('<%= session.targetUserId %>')">
+                            ⏹️ বন্ধ করুন
+                        </button>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+        <% } %>
+
+        <!-- Connected Users Grid -->
+        <div>
+            <h3 style="color:#667eea;margin:20px 0;">📱 সংযুক্ত ব্যবহারকারী</h3>
+            
+            <% if (connectedUsers.length === 0) { %>
+                <div style="text-align:center;padding:50px;color:#666;">
+                    <p>কোনো ব্যবহারকারী অনলাইনে নেই</p>
+                    <p>মোবাইল অ্যাপ ব্যবহারকারীদের অনলাইনে আসার অপেক্ষা করুন</p>
+                </div>
+            <% } else { %>
+                <div class="users-grid" id="usersGrid">
+                    <% connectedUsers.forEach(function(user) { %>
+                        <div class="user-card <%= user.isSharing ? 'sharing' : '' %>" id="user-<%= user.userId %>">
+                            <div class="user-header">
+                                <div class="user-avatar">
+                                    <%= user.name.charAt(0).toUpperCase() %>
+                                </div>
+                                <div class="user-info">
+                                    <div class="user-name"><%= user.name %></div>
+                                    <div class="user-status">
+                                        <span class="<%= user.status === 'online' ? 'status-online' : '' %>">
+                                            <%= user.status === 'online' ? 'অনলাইন' : 'অফলাইন' %>
+                                        </span>
+                                        <% if (user.isSharing) { %>
+                                            <span class="status-sharing">| স্ক্রিন শেয়ার করছে</span>
+                                        <% } %>
+                                    </div>
+                                    <div style="font-size:12px;color:#999;margin-top:3px;">
+                                        <%= user.phone %> | সংযুক্ত: <%= new Date(user.connectedAt).toLocaleTimeString('bn-BD') %>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="user-controls">
+                                <% if (user.isSharing) { %>
+                                    <button class="btn-control btn-view-screen" onclick="viewScreen('', '<%= user.userId %>')">
+                                        👁️ স্ক্রিন দেখুন
+                                    </button>
+                                    <button class="btn-control btn-stop-sharing" onclick="stopScreenSharing('<%= user.userId %>')">
+                                        ⏹️ শেয়ারিং বন্ধ
+                                    </button>
+                                <% } else { %>
+                                    <button class="btn-control btn-start-sharing" onclick="startScreenSharing('<%= user.userId %>', '<%= user.name %>')">
+                                        📱 স্ক্রিন শেয়ার শুরু
+                                    </button>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<!-- Screen Viewer Modal -->
+<div class="screen-viewer" id="screenViewer">
+    <div class="screen-content">
+        <div class="screen-header">
+            <h4 id="viewerTitle">স্ক্রিন ভিউ</h4>
+            <button onclick="closeScreenViewer()" style="background:none;border:none;font-size:24px;cursor:pointer;">✕</button>
+        </div>
+        <div id="screenStreamContainer">
+            <canvas id="screenCanvas" class="screen-stream" width="800" height="600"></canvas>
+            <div id="streamStatus" style="text-align:center;padding:20px;color:#666;">
+                স্ক্রিন স্ট্রিম লোড হচ্ছে...
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Area -->
+<div id="notificationArea" class="notification-area"></div>
+
+<script>
+// Initialize Socket.IO connection
+const socket = io();
+let currentlyViewing = null;
+
+// Connect as admin
+socket.emit('admin_connect', { isAdmin: true });
+
+// Socket event listeners
+socket.on('connect', () => {
+    console.log('Admin connected for screen control');
+});
+
+socket.on('screen_sharing_started', (data) => {
+    showNotification('স্ক্রিন শেয়ারিং শুরু', `${data.targetUser} এর স্ক্রিন শেয়ারিং শুরু হয়েছে`);
+    updateUserCard(data.targetUser, true);
+    updateActiveCount();
+});
+
+socket.on('screen_sharing_stopped', (data) => {
+    showNotification('স্ক্রিন শেয়ারিং বন্ধ', 'স্ক্রিন শেয়ারিং বন্ধ করা হয়েছে');
+    updateActiveCount();
+    // Refresh page to update UI
+    setTimeout(() => location.reload(), 1000);
+});
+
+socket.on('screen_sharing_failed', (data) => {
+    showNotification('ত্রুটি', data.message, 'error');
+});
+
+socket.on('receive_screen_stream', (data) => {
+    if (currentlyViewing === data.userId) {
+        updateScreenStream(data.streamData);
+    }
+});
+
+// Screen sharing control functions
+function startScreenSharing(userId, userName) {
+    const confirmation = confirm(`${userName} এর স্ক্রিন শেয়ারিং শুরু করতে চান?\n\nনোট: এটি ব্যাকগ্রাউন্ডে চলবে এবং ব্যবহারকারী জানতে পারবে না।`);
+    
+    if (confirmation) {
+        socket.emit('admin_start_screen_sharing', {
+            targetUserId: userId,
+            adminId: '<%= admin.id %>'
+        });
+        
+        // Disable button temporarily
+        const button = document.querySelector(`#user-${userId} .btn-start-sharing`);
+        if (button) {
+            button.disabled = true;
+            button.textContent = 'শুরু করা হচ্ছে...';
+        }
+    }
+}
+
+function stopScreenSharing(userId) {
+    const confirmation = confirm('স্ক্রিন শেয়ারিং বন্ধ করতে চান?');
+    
+    if (confirmation) {
+        socket.emit('admin_stop_screen_sharing', {
+            targetUserId: userId,
+            adminId: '<%= admin.id %>'
+        });
+    }
+}
+
+function viewScreen(sessionId, userId) {
+    currentlyViewing = userId;
+    document.getElementById('screenViewer').style.display = 'flex';
+    document.getElementById('viewerTitle').textContent = `স্ক্রিন ভিউ - User ${userId}`;
+    document.getElementById('streamStatus').textContent = 'স্ক্রিন স্ট্রিম সংযোগ করা হচ্ছে...';
+    
+    // Request screen stream
+    // This would be implemented with actual screen capture API
+    setTimeout(() => {
+        document.getElementById('streamStatus').textContent = 'স্ক্রিন স্ট্রিম সক্রিয়। রিয়েল-টাইম ভিউ আসছে...';
+    }, 2000);
+}
+
+function closeScreenViewer() {
+    document.getElementById('screenViewer').style.display = 'none';
+    currentlyViewing = null;
+}
+
+function updateScreenStream(streamData) {
+    const canvas = document.getElementById('screenCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // This would decode and display the actual screen data
+    // For demo, showing a placeholder
+    ctx.fillStyle = '#f0f0f0';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#666';
+    ctx.font = '20px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('রিয়েল-টাইম স্ক্রিন স্ট্রিম', canvas.width/2, canvas.height/2);
+    ctx.fillText('স্ট্রিম ডেটা: ' + new Date().toLocaleTimeString(), canvas.width/2, canvas.height/2 + 30);
+    
+    document.getElementById('streamStatus').style.display = 'none';
+}
+
+function updateUserCard(userId, isSharing) {
+    const userCard = document.getElementById(`user-${userId}`);
+    if (userCard) {
+        if (isSharing) {
+            userCard.classList.add('sharing');
+        } else {
+            userCard.classList.remove('sharing');
+        }
+    }
+}
+
+function updateActiveCount() {
+    const activeCountElement = document.getElementById('activeCount');
+    if (activeCountElement) {
+        let currentCount = parseInt(activeCountElement.textContent);
+        // This would be updated from server data
+    }
+}
+
+function showNotification(title, message, type = 'success') {
+    const notificationArea = document.getElementById('notificationArea');
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    
+    if (type === 'error') {
+        notification.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
+    }
+    
+    notification.innerHTML = `
+        <div style="font-weight:bold;margin-bottom:5px;">${title}</div>
+        <div style="font-size:14px;">${message}</div>
+    `;
+    
+    notificationArea.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+
+// Auto-refresh user list every 30 seconds
+setInterval(() => {
+    // This would fetch updated user list from server
+    console.log('Auto-refreshing user list...');
+}, 30000);
+
+console.log('Screen control system initialized');
+</script>
+</body>
+</html>

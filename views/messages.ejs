@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>মেসেজিং সিস্টেম</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="container" style="max-width: 90vw; text-align: left;">
+    <h2 style="text-align: center; color: #17a2b8;">💬 মেসেজিং সিস্টেম</h2>
+    
+    <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin: 20px 0; text-align: center;">
+        <p><strong>আপনার ইউজার আইডি:</strong> 
+        <span style="background: #ffffff; padding: 8px 15px; border-radius: 5px; font-weight: bold; color: #17a2b8;">
+            <%= user.userId %>
+        </span></p>
+    </div>
+
+    <!-- ইউজার সার্চ ফর্ম -->
+    <div style="background: #f8f9fa; padding: 25px; border-radius: 10px; margin: 20px 0;">
+        <h3 style="color: #17a2b8; margin-bottom: 15px;">ইউজার খুঁজুন</h3>
+        <form method="POST" action="/search_user">
+            <input type="text" name="searchUserId" placeholder="ইউজার আইডি লিখুন (যেমন: U123456001)" required 
+                   style="width: 70%; margin-right: 10px;">
+            <button type="submit" class="btn" style="width: 25%; padding: 15px; font-size: 16px;">
+                🔍 খুঁজুন
+            </button>
+        </form>
+        
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="error" style="margin-top: 15px;"><%= error %></div>
+        <% } %>
+    </div>
+
+    <!-- ইউজার পাওয়া গেলে চ্যাট সেকশন -->
+    <% if (typeof foundUser !== 'undefined' && foundUser) { %>
+    <div style="background: #ffffff; border: 2px solid #17a2b8; border-radius: 15px; padding: 25px; margin: 20px 0;">
+        <h3 style="color: #17a2b8; text-align: center; margin-bottom: 20px;">
+            💬 <%= foundUser.name %> এর সাথে চ্যাট (ID: <%= foundUser.userId %>)
+        </h3>
+        
+        <!-- মেসেজ হিস্ট্রি -->
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
+            <% if (messages.length === 0) { %>
+                <p style="text-align: center; color: #666;">এখনো কোনো মেসেজ নেই। প্রথম মেসেজ পাঠান!</p>
+            <% } else { %>
+                <% messages.forEach(msg => { %>
+                    <% const sender = users.find(u => u.id === msg.senderId) %>
+                    <div style="margin: 10px 0; padding: 12px; border-radius: 8px; 
+                                <%= msg.senderId === user.id ? 'background: #e3f2fd; margin-left: 50px; text-align: right;' : 'background: #fff3cd; margin-right: 50px;' %>">
+                        <p style="margin: 0; font-weight: bold; color: #17a2b8;">
+                            <%= msg.senderId === user.id ? 'আপনি' : sender.name %>
+                        </p>
+                        <p style="margin: 8px 0 4px 0;"><%= msg.messageText %></p>
+                        <small style="color: #666;">
+                            <%= new Date(msg.sentAt).toLocaleString('bn-BD') %>
+                        </small>
+                    </div>
+                <% }) %>
+            <% } %>
+        </div>
+        
+        <!-- নতুন মেসেজ পাঠানো -->
+        <form method="POST" action="/send_message">
+            <input type="hidden" name="receiverId" value="<%= foundUser.id %>">
+            <div style="display: flex; gap: 10px;">
+                <textarea name="messageText" placeholder="আপনার মেসেজ লিখুন..." 
+                          required rows="3" style="flex: 1; resize: vertical;"></textarea>
+                <button type="submit" class="btn" style="width: 120px; height: fit-content;">
+                    📤 পাঠান
+                </button>
+            </div>
+        </form>
+    </div>
+    <% } %>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="/dashboard" class="btn btn-secondary">ড্যাশবোর্ডে ফিরে যান</a>
+    </div>
+</div>
+</body>
+</html>

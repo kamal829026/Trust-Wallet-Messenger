@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>লগইন</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="container">
+    <h2>ইউজার লগইন</h2>
+    <% if(message){ %>
+      <p class="error"><%= message %></p>
+    <% } %>
+    <form method="POST" action="/login">
+        <input type="email" name="email" placeholder="ইমেইল" required><br>
+        <input type="password" name="password" placeholder="পাসওয়ার্ড" required><br>
+        <button type="submit" class="btn">লগইন করুন</button>
+    </form>
+    <p>নতুন একাউন্ট দরকার? <a href="/register">রেজিস্ট্রেশন করুন</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>রিভিউ লিখুন</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="container">
+    <h2>রিভিউ লিখুন</h2>
+    
+    <% if (typeof message !== 'undefined' && message) { %>
+        <div class="success"><%= message %></div>
+    <% } %>
+    
+    <p style="background:#fff3cd;padding:15px;border-radius:5px;margin:20px 0;border-left:4px solid #ffc107;">
+        <strong>সতর্কতা:</strong> ভুল বা খারাপ ভিডিও/তথ্য দিলে টাকা কাঙ্ক্ষিত নাম্বারে যাবে না।
+        সঠিক তথ্য দিয়ে রিভিউ লিখুন।
+    </p>
+    
+    <form method="POST" action="/write_review" enctype="multipart/form-data">
+        <input type="tel" name="returnNumber" placeholder="যে নাম্বারে টাকা পাঠাবেন" required><br>
+        <textarea name="message" placeholder="আপনার রিভিউ/মেসেজ লিখুন..." rows="4" required></textarea><br>
+        <input type="file" name="screenshot" accept="image/*"><br>
+        <label style="text-align:left;display:block;margin:10px 0;color:#666;">স্ক্রিনশট আপলোড করুন (ঐচ্ছিক)</label>
+        <button type="submit" class="btn">রিভিউ সাবমিট করুন</button>
+    </form>
+    
+    <a href="/dashboard" class="btn btn-secondary">ড্যাশবোর্ডে ফিরে যান</a>
+</div>
+</body>
+</html>

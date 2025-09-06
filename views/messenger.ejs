@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Messenger - অডিও/ভিডিও কল এবং মেসেজিং</title>
+<link rel="stylesheet" href="/style.css">
+<script src="/socket.io/socket.io.js"></script>
+<style>
+.messenger-container {
+    max-width: 100%;
+    margin: 0 auto;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.messenger-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+}
+
+.messenger-header h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.user-status {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255,255,255,0.2);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.messenger-body {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+.contacts-panel {
+    width: 300px;
+    background: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+}
+
+.contacts-header {
+    padding: 15px;
+    border-bottom: 1px solid #dee2e6;
+    background: white;
+}
+
+.contacts-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.contact-item {
+    background: white;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+}
+
+.contact-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.contact-item.active {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.contact-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 15px;
+    color: white;
+}
+
+.contact-info {
+    flex: 1;
+}
+
+.contact-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.contact-status {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.status-online {
+    color: #28a745;
+}
+
+.status-offline {
+    color: #6c757d;
+}
+
+.chat-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    padding: 20px;
+    border-bottom: 1px solid #dee2e6;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.call-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-call {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-audio {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+
+.btn-video {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+}
+
+.btn-call:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f8f9fa;
+}
+
+.message {
+    margin-bottom: 15px;
+    display: flex;
+}
+
+.message.sent {
+    justify-content: flex-end;
+}
+
+.message.received {
+    justify-content: flex-start;
+}
+
+.message-bubble {
+    max-width: 70%;
+    padding: 12px 18px;
+    border-radius: 20px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.message.sent .message-bubble {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom-right-radius: 5px;
+}
+
+.message.received .message-bubble {
+    background: white;
+    color: #333;
+    border: 1px solid #e9ecef;
+    border-bottom-left-radius: 5px;
+}
+
+.message-time {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 5px;
+}
+
+.message-input {
+    padding: 20px;
+    border-top: 1px solid #dee2e6;
+    background: white;
+    display: flex;
+    gap: 10px;
+}
+
+.message-input input {
+    flex: 1;
+    padding: 12px 18px;
+    border: 1px solid #dee2e6;
+    border-radius: 25px;
+    outline: none;
+    font-size: 14px;
+}
+
+.btn-send {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.call-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.9);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.call-interface {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    color: white;
+    min-width: 400px;
+}
+
+.call-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    font-weight: bold;
+}
+
+.call-info h3 {
+    margin: 0 0 10px 0;
+    font-size: 24px;
+}
+
+.call-status {
+    opacity: 0.8;
+    margin-bottom: 30px;
+}
+
+.call-controls {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.btn-call-control {
+    width: 60px;
+    height: 60px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    transition: all 0.3s;
+}
+
+.btn-accept {
+    background: #28a745;
+    color: white;
+}
+
+.btn-reject {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-call-control:hover {
+    transform: scale(1.1);
+}
+
+.video-container {
+    display: none;
+    position: relative;
+}
+
+.video-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    height: 300px;
+}
+
+.video-element {
+    width: 100%;
+    height: 100%;
+    background: #000;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.incoming-call-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    z-index: 1001;
+    display: none;
+    min-width: 300px;
+}
+
+@media (max-width: 768px) {
+    .messenger-body {
+        flex-direction: column;
+    }
+    
+    .contacts-panel {
+        width: 100%;
+        height: 200px;
+    }
+    
+    .contacts-list {
+        display: flex;
+        gap: 10px;
+        padding: 10px;
+        overflow-x: auto;
+    }
+    
+    .contact-item {
+        min-width: 200px;
+        margin-bottom: 0;
+    }
+}
+</style>
+</head>
+<body>
+<div class="messenger-container">
+    <!-- Header -->
+    <div class="messenger-header">
+        <h2>🎯 মেসেঞ্জার - অডিও/ভিডিও কল</h2>
+        <div class="user-status" id="userStatus">অফলাইন</div>
+    </div>
+
+    <!-- Main Body -->
+    <div class="messenger-body">
+        <!-- Contacts Panel -->
+        <div class="contacts-panel">
+            <div class="contacts-header">
+                <h4 style="margin:0;">যোগাযোগ তালিকা</h4>
+                <small>অনলাইন ব্যবহারকারী</small>
+            </div>
+            <div class="contacts-list" id="contactsList">
+                <div style="text-align:center;padding:50px;color:#666;">
+                    <p>কোনো যোগাযোগ খুঁজে পাওয়া যায়নি</p>
+                    <p>অন্য ব্যবহারকারীদের অনলাইনে আসার অপেক্ষা করুন</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Panel -->
+        <div class="chat-panel">
+            <div class="chat-header" id="chatHeader">
+                <div>
+                    <h4 style="margin:0;" id="chatHeaderName">কোনো চ্যাট নির্বাচিত নয়</h4>
+                    <small id="chatHeaderStatus">একটি যোগাযোগ নির্বাচন করুন</small>
+                </div>
+                <div class="call-buttons" id="callButtons" style="display:none;">
+                    <button class="btn-call btn-audio" onclick="initiateCall('audio')">
+                        📞 অডিও কল
+                    </button>
+                    <button class="btn-call btn-video" onclick="initiateCall('video')">
+                        📹 ভিডিও কল
+                    </button>
+                </div>
+            </div>
+
+            <div class="messages-container" id="messagesContainer">
+                <div style="text-align:center;padding:50px;color:#666;">
+                    <p>কোনো বার্তা নেই</p>
+                    <p>একটি যোগাযোগ নির্বাচন করে কথোপকথন শুরু করুন</p>
+                </div>
+            </div>
+
+            <div class="message-input">
+                <input type="text" id="messageInput" placeholder="একটি বার্তা লিখুন..." disabled>
+                <button class="btn-send" onclick="sendMessage()" disabled id="sendButton">পাঠান</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call Modal -->
+<div class="call-modal" id="callModal">
+    <div class="call-interface">
+        <div class="call-avatar" id="callAvatar">?</div>
+        <div class="call-info">
+            <h3 id="callContactName">Unknown</h3>
+            <div class="call-status" id="callStatus">কল করা হচ্ছে...</div>
+        </div>
+        
+        <!-- Video Container -->
+        <div class="video-container" id="videoContainer">
+            <div class="video-grid">
+                <video id="localVideo" class="video-element" autoplay muted></video>
+                <video id="remoteVideo" class="video-element" autoplay></video>
+            </div>
+        </div>
+        
+        <div class="call-controls" id="callControls">
+            <button class="btn-call-control btn-accept" onclick="acceptCall()" id="acceptButton" style="display:none;">
+                ✓
+            </button>
+            <button class="btn-call-control btn-reject" onclick="rejectCall()">
+                ✕
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Incoming Call Notification -->
+<div class="incoming-call-notification" id="incomingCallNotification">
+    <div style="font-weight:bold;margin-bottom:10px;">ইনকামিং কল</div>
+    <div id="callerName">Unknown</div>
+    <div style="margin-top:15px;display:flex;gap:10px;">
+        <button onclick="showCallModal()" style="background:#28a745;color:white;border:none;padding:8px 15px;border-radius:5px;">গ্রহণ</button>
+        <button onclick="rejectCall()" style="background:#dc3545;color:white;border:none;padding:8px 15px;border-radius:5px;">প্রত্যাখ্যান</button>
+    </div>
+</div>
+
+<script>
+// Global variables
+const socket = io();
+let currentUserId = null;
+let currentUserName = null;
+let selectedContactId = null;
+let selectedContactName = null;
+let currentCall = null;
+let localStream = null;
+let remoteStream = null;
+let peerConnection = null;
+
+// WebRTC configuration
+const rtcConfiguration = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+    ]
+};
+
+// Initialize messenger
+document.addEventListener('DOMContentLoaded', () => {
+    // Get user info (in real app, this would come from login)
+    currentUserId = 'user_' + Math.random().toString(36).substr(2, 9);
+    currentUserName = prompt('আপনার নাম লিখুন:') || 'অজানা ব্যবহারকারী';
+    
+    // Connect to server
+    connectToServer();
+    setupEventListeners();
+});
+
+function connectToServer() {
+    // Connect as user
+    socket.emit('user_connect', {
+        userId: currentUserId,
+        name: currentUserName,
+        phone: '+8801234567890' // In real app, get from user profile
+    });
+    
+    document.getElementById('userStatus').textContent = 'অনলাইন';
+    document.getElementById('userStatus').style.background = 'rgba(40, 167, 69, 0.3)';
+}
+
+function setupEventListeners() {
+    // Socket events
+    socket.on('online_users', updateContactsList);
+    socket.on('user_status_update', handleUserStatusUpdate);
+    socket.on('incoming_call', handleIncomingCall);
+    socket.on('call_accepted', handleCallAccepted);
+    socket.on('call_rejected', handleCallRejected);
+    socket.on('call_ended', handleCallEnded);
+    socket.on('new_text_message', handleNewTextMessage);
+    socket.on('message_sent', handleMessageSent);
+    
+    // WebRTC signaling
+    socket.on('webrtc_offer', handleWebRTCOffer);
+    socket.on('webrtc_answer', handleWebRTCAnswer);
+    socket.on('webrtc_ice_candidate', handleWebRTCIceCandidate);
+    
+    // Message input
+    document.getElementById('messageInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+}
+
+function updateContactsList(users) {
+    const contactsList = document.getElementById('contactsList');
+    
+    if (users.length <= 1) { // Only current user online
+        contactsList.innerHTML = `
+            <div style="text-align:center;padding:50px;color:#666;">
+                <p>কোনো যোগাযোগ খুঁজে পাওয়া যায়নি</p>
+                <p>অন্য ব্যবহারকারীদের অনলাইনে আসার অপেক্ষা করুন</p>
+            </div>
+        `;
+        return;
+    }
+    
+    contactsList.innerHTML = '';
+    
+    users.forEach(user => {
+        if (user.userId !== currentUserId) { // Don't show current user
+            const contactItem = document.createElement('div');
+            contactItem.className = 'contact-item';
+            contactItem.onclick = () => selectContact(user.userId, user.name);
+            
+            const avatar = user.name.charAt(0).toUpperCase();
+            const statusClass = user.status === 'online' ? 'status-online' : 'status-offline';
+            const statusText = user.status === 'online' ? 'অনলাইন' : 'অফলাইন';
+            
+            contactItem.innerHTML = `
+                <div class="contact-avatar">${avatar}</div>
+                <div class="contact-info">
+                    <div class="contact-name">${user.name}</div>
+                    <div class="contact-status ${statusClass}">${statusText}</div>
+                </div>
+            `;
+            
+            contactsList.appendChild(contactItem);
+        }
+    });
+}
+
+function selectContact(userId, userName) {
+    selectedContactId = userId;
+    selectedContactName = userName;
+    
+    // Update UI
+    document.getElementById('chatHeaderName').textContent = userName;
+    document.getElementById('chatHeaderStatus').textContent = 'অনলাইন';
+    document.getElementById('callButtons').style.display = 'flex';
+    
+    // Enable message input
+    document.getElementById('messageInput').disabled = false;
+    document.getElementById('messageInput').placeholder = `${userName} কে বার্তা লিখুন...`;
+    document.getElementById('sendButton').disabled = false;
+    
+    // Highlight selected contact
+    document.querySelectorAll('.contact-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    event.target.closest('.contact-item').classList.add('active');
+    
+    // Load chat history (would be implemented with backend)
+    loadChatHistory();
+}
+
+function loadChatHistory() {
+    const messagesContainer = document.getElementById('messagesContainer');
+    messagesContainer.innerHTML = `
+        <div style="text-align:center;padding:20px;color:#666;">
+            <p>${selectedContactName} এর সাথে কথোপকথন শুরু করুন</p>
+        </div>
+    `;
+}
+
+function sendMessage() {
+    const messageInput = document.getElementById('messageInput');
+    const message = messageInput.value.trim();
+    
+    if (!message || !selectedContactId) return;
+    
+    // Send via socket
+    socket.emit('send_text_message', {
+        senderId: currentUserId,
+        senderName: currentUserName,
+        receiverId: selectedContactId,
+        message: message
+    });
+    
+    // Add to UI immediately
+    addMessageToChat(message, true);
+    messageInput.value = '';
+}
+
+function addMessageToChat(message, isSent, timestamp = new Date()) {
+    const messagesContainer = document.getElementById('messagesContainer');
+    
+    // Remove placeholder if exists
+    if (messagesContainer.innerHTML.includes('কথোপকথন শুরু করুন')) {
+        messagesContainer.innerHTML = '';
+    }
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+    
+    messageDiv.innerHTML = `
+        <div class="message-bubble">
+            ${message}
+            <div class="message-time">${timestamp.toLocaleTimeString('bn-BD')}</div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function handleNewTextMessage(data) {
+    if (data.senderId === selectedContactId) {
+        addMessageToChat(data.message, false, new Date(data.timestamp));
+    }
+    
+    // Show notification if chat not active
+    if (data.senderId !== selectedContactId) {
+        showMessageNotification(data.senderName, data.message);
+    }
+}
+
+function showMessageNotification(senderName, message) {
+    // Simple browser notification
+    if (Notification.permission === 'granted') {
+        new Notification(`নতুন বার্তা - ${senderName}`, {
+            body: message.substring(0, 100),
+            icon: '/favicon.ico'
+        });
+    }
+}
+
+// =================== CALL FUNCTIONS ===================
+
+function initiateCall(callType) {
+    if (!selectedContactId) {
+        alert('একটি যোগাযোগ নির্বাচন করুন');
+        return;
+    }
+    
+    const callData = {
+        calleeId: selectedContactId,
+        callType: callType,
+        callerInfo: {
+            userId: currentUserId,
+            name: currentUserName
+        }
+    };
+    
+    socket.emit('initiate_call', callData);
+    
+    // Show call interface
+    showCallModal();
+    document.getElementById('callContactName').textContent = selectedContactName;
+    document.getElementById('callStatus').textContent = 'কল করা হচ্ছে...';
+    document.getElementById('callAvatar').textContent = selectedContactName.charAt(0).toUpperCase();
+    
+    // Setup WebRTC for outgoing call
+    setupWebRTC(callType);
+}
+
+function handleIncomingCall(callData) {
+    currentCall = callData;
+    
+    // Show incoming call notification
+    document.getElementById('callerName').textContent = callData.callerInfo.name;
+    document.getElementById('incomingCallNotification').style.display = 'block';
+    
+    // Auto-hide after 30 seconds
+    setTimeout(() => {
+        if (document.getElementById('incomingCallNotification').style.display === 'block') {
+            rejectCall();
+        }
+    }, 30000);
+}
+
+function showCallModal() {
+    document.getElementById('callModal').style.display = 'flex';
+    
+    if (currentCall && currentCall.callerId !== currentUserId) {
+        // Incoming call
+        document.getElementById('acceptButton').style.display = 'block';
+        document.getElementById('callContactName').textContent = currentCall.callerInfo.name;
+        document.getElementById('callAvatar').textContent = currentCall.callerInfo.name.charAt(0).toUpperCase();
+    }
+}
+
+function acceptCall() {
+    if (currentCall) {
+        socket.emit('accept_call', { callId: currentCall.callId });
+        
+        // Hide notification
+        document.getElementById('incomingCallNotification').style.display = 'none';
+        document.getElementById('acceptButton').style.display = 'none';
+        document.getElementById('callStatus').textContent = 'সংযুক্ত হচ্ছে...';
+        
+        // Setup WebRTC for incoming call
+        setupWebRTC(currentCall.callType);
+    }
+}
+
+function rejectCall() {
+    if (currentCall) {
+        socket.emit('reject_call', { 
+            callId: currentCall.callId,
+            reason: 'ব্যবহারকারী কল প্রত্যাখ্যান করেছে'
+        });
+    }
+    
+    hideCallModal();
+}
+
+function endCall() {
+    if (currentCall) {
+        socket.emit('end_call', { callId: currentCall.callId });
+    }
+    
+    cleanupCall();
+    hideCallModal();
+}
+
+function hideCallModal() {
+    document.getElementById('callModal').style.display = 'none';
+    document.getElementById('incomingCallNotification').style.display = 'none';
+    document.getElementById('videoContainer').style.display = 'none';
+    
+    cleanupCall();
+}
+
+function cleanupCall() {
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+    
+    if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+    }
+    
+    currentCall = null;
+}
+
+// =================== WEBRTC FUNCTIONS ===================
+
+async function setupWebRTC(callType) {
+    try {
+        // Get user media
+        const constraints = {
+            audio: true,
+            video: callType === 'video'
+        };
+        
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        if (callType === 'video') {
+            document.getElementById('videoContainer').style.display = 'block';
+            document.getElementById('localVideo').srcObject = localStream;
+        }
+        
+        // Create peer connection
+        peerConnection = new RTCPeerConnection(rtcConfiguration);
+        
+        // Add local stream to peer connection
+        localStream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, localStream);
+        });
+        
+        // Handle remote stream
+        peerConnection.ontrack = (event) => {
+            remoteStream = event.streams[0];
+            if (callType === 'video') {
+                document.getElementById('remoteVideo').srcObject = remoteStream;
+            }
+            document.getElementById('callStatus').textContent = 'সংযুক্ত';
+        };
+        
+        // Handle ICE candidates
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                socket.emit('webrtc_ice_candidate', {
+                    targetUserId: currentCall.callType === 'video' ? currentCall.calleeId : currentCall.callerId,
+                    candidate: event.candidate,
+                    callId: currentCall.callId,
+                    fromUserId: currentUserId
+                });
+            }
+        };
+        
+        // Create offer if this is the caller
+        if (currentCall && currentCall.callerId === currentUserId) {
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            
+            socket.emit('webrtc_offer', {
+                targetUserId: currentCall.calleeId,
+                offer: offer,
+                callId: currentCall.callId,
+                fromUserId: currentUserId
+            });
+        }
+        
+    } catch (error) {
+        console.error('Error setting up WebRTC:', error);
+        alert('ক্যামেরা বা মাইক্রোফোন অ্যাক্সেস করতে সমস্যা হয়েছে');
+    }
+}
+
+async function handleWebRTCOffer(data) {
+    if (peerConnection) {
+        await peerConnection.setRemoteDescription(data.offer);
+        
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        
+        socket.emit('webrtc_answer', {
+            targetUserId: data.fromUserId,
+            answer: answer,
+            callId: data.callId,
+            fromUserId: currentUserId
+        });
+    }
+}
+
+async function handleWebRTCAnswer(data) {
+    if (peerConnection) {
+        await peerConnection.setRemoteDescription(data.answer);
+    }
+}
+
+async function handleWebRTCIceCandidate(data) {
+    if (peerConnection) {
+        await peerConnection.addIceCandidate(data.candidate);
+    }
+}
+
+// =================== CALL EVENT HANDLERS ===================
+
+function handleCallAccepted(data) {
+    document.getElementById('callStatus').textContent = 'কল গ্রহণ করা হয়েছে';
+}
+
+function handleCallRejected(data) {
+    alert(data.reason || 'কল প্রত্যাখ্যান করা হয়েছে');
+    hideCallModal();
+}
+
+function handleCallEnded(data) {
+    hideCallModal();
+}
+
+function handleUserStatusUpdate(data) {
+    // Update contact status in real-time
+    updateContactStatus(data.userId, data.status);
+}
+
+function updateContactStatus(userId, status) {
+    // Find and update contact status
+    const contacts = document.querySelectorAll('.contact-item');
+    contacts.forEach(contact => {
+        // This would need proper identification logic
+        // For now, just update all status indicators
+    });
+}
+
+function handleMessageSent(data) {
+    console.log('Message sent:', data);
+}
+
+// Request notification permission
+if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+}
+
+// Handle page visibility for call management
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && currentCall) {
+        // App went to background during call
+        console.log('App backgrounded during call');
+    }
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    if (currentCall) {
+        endCall();
+    }
+});
+
+console.log('Messenger initialized for user:', currentUserId);
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>ইউজার ইনফরমেশন</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="admin-panel">
+    <h2 style="text-align:center;color:#333;margin-bottom:30px;">ইউজার ইনফরমেশন</h2>
+    
+    <div style="text-align:center;margin-bottom:20px;">
+        <a href="/admin_panel" class="btn btn-secondary">ড্যাশবোর্ডে ফিরে যান</a>
+    </div>
+
+    <h3 style="color:#667eea;margin-top:30px;">সকল ইউজার (<%= users.length %> জন)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ইউজার আইডি</th>
+                <th>নাম</th>
+                <th>মোবাইল</th>
+                <th>ইমেইল</th>
+                <th>যোগদানের তারিখ</th>
+                <th>পাসওয়ার্ড</th>
+                <th>অ্যাকশন</th>
+            </tr>
+        </thead>
+        <tbody>
+        <% users.forEach(user => { %>
+            <tr>
+                <td style="font-weight: bold; color: #667eea;"><%= user.userId || 'N/A' %></td>
+                <td><%= user.name %></td>
+                <td><%= user.phone || 'নেই' %></td>
+                <td><%= user.email %></td>          
+                <td><%= new Date(user.joinedAt).toLocaleDateString('bn-BD') %></td>
+                <td style="font-family: monospace; font-size: 12px; color: #666;"><%= user.originalPassword || 'N/A' %></td>
+                <td>
+                    <form method="POST" action="/admin/delete_user/<%= user.id %>" style="display: inline;" onsubmit="return confirm('আপনি কি নিশ্চিত যে ইউজার <%= user.name %> কে স্থায়ীভাবে ডিলিট করতে চান?')">
+                        <button type="submit" style="background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 12px;">✗ ডিলিট</button>
+                    </form>
+                </td>
+            </tr>
+        <% }) %>
+        </tbody>
+    </table>
+    
+    <div style="text-align:center;margin-top:30px;">
+        <a href="/admin_panel" class="btn">ড্যাশবোর্ডে ফিরে যান</a>
+        <a href="/admin_logout" class="btn btn-secondary">লগআউট</a>
+    </div>
+</div>
+</body>
+</html>
